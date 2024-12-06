@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: MIT
+//Author: Froylan Cortes
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -6,42 +7,42 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title BiometricRegistry
- * @dev Gestiona el registro y autenticación biométrica de operadores
+ * @dev Manages biometric registration and authentication of operators
  */
 contract BiometricRegistry is Ownable, Pausable {
-    // Estructura para almacenar información del operador
+    // Structure for storing operator information
     struct Operator {
-        bool isRegistered;            // Estado de registro
-        uint256 lastAuthentication;   // Último timestamp de autenticación
-        uint256 totalOperations;      // Total de operaciones realizadas
-        uint256 registrationDate;     // Fecha de registro
-        bool isActive;                // Estado activo/inactivo
-        string role;                  // Rol del operador
+        bool isRegistered;            // Register Status
+        uint256 lastAuthentication;   // Last authentication timestamp
+        uint256 totalOperations;      // Number of operations
+        uint256 registrationDate;     // Register Date
+        bool isActive;                // State active/inactive
+        string role;                  // Operator role
     }
 
-    // Mappings principales
+    // Main Mappings
     mapping(address => Operator) public operators;
     mapping(uint256 => address) public operatorByBiometricId;
     mapping(uint256 => bool) public usedBiometricIds;
 
-    // Eventos
+    // Events
     event OperatorRegistered(address indexed operator, uint256 indexed biometricId, string role);
     event OperatorAuthenticated(address indexed operator, uint256 timestamp);
     event OperatorStatusUpdated(address indexed operator, bool isActive);
     event OperatorRoleUpdated(address indexed operator, string newRole);
     event OperatorRemoved(address indexed operator, uint256 indexed biometricId);
 
-    // Constantes
+    // Constants
     uint256 public constant AUTH_TIMEOUT = 12 hours;
 
     /**
-     * @dev Constructor del contrato
-     * @param initialOwner La dirección del propietario inicial
+     * @dev Constructor
+     * @param initialOwner
      */
     constructor(address initialOwner) Ownable(initialOwner){
     }
 
-    // Modificadores
+    // Modifiers
     modifier operatorExists(address operator) {
         require(operators[operator].isRegistered, "Operator not registered");
         _;
@@ -59,10 +60,10 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra un nuevo operador con su ID biométrico
-     * @param operator Dirección del operador
-     * @param biometricId ID biométrico único
-     * @param role Rol del operador
+     * @dev Register a new trader with their biometric ID
+     * @param operator Address of operator
+     * @param biometricId unique biometric ID
+     * @param role Operator’s
      */
     function registerOperator(
         address operator,
@@ -94,9 +95,9 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Autentica un operador usando su ID biométrico
-     * @param biometricId ID biométrico del operador
-     * @return bool éxito de la autenticación
+     * @dev Authenticate an operator using their biometric ID
+     * @param biometricId biometric operator ID
+     * @return bool authentication success
      */
     function authenticateOperator(uint256 biometricId)
     external
@@ -116,7 +117,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Actualiza el estado activo/inactivo de un operador
+     * @dev Updates the active/inactive status of an operator
      */
     function updateOperatorStatus(address operator, bool isActive)
     external
@@ -129,7 +130,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Actualiza el rol de un operador
+     * @dev Update the role of an operator
      */
     function updateOperatorRole(address operator, string memory newRole)
     external
@@ -143,7 +144,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Elimina un operador del registro
+     * @dev Remove an operator from the registry
      */
     function removeOperator(address operator, uint256 biometricId)
     external
@@ -159,7 +160,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Verifica si un operador está autenticado recientemente
+     * @dev Check if an operator is recently authenticated
      */
     function isOperatorAuthenticated(address operator)
     external
@@ -173,7 +174,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Obtiene el rol de un operador
+     * @dev Gets the role of an operator
      */
     function getOperatorRole(address operator)
     external
@@ -185,7 +186,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Obtiene las estadísticas de un operador
+     * @dev Gets the statistics of an operator
      */
     function getOperatorStats(address operator)
     external
@@ -210,7 +211,7 @@ contract BiometricRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Despausa el contrato
+     * @dev unpause the contract
      */
     function unpause() external onlyOwner {
         _unpause();

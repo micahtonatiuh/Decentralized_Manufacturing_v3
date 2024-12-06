@@ -7,24 +7,24 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
     struct SLAMetrics {
-        uint256 targetPrintingTime;    // Tiempo objetivo para impresión
-        uint256 targetQualityScore;    // Score objetivo de calidad
-        uint256 targetPickupTime;      // Tiempo objetivo para recolección
-        uint256 targetAssemblyTime;    // Tiempo objetivo para ensamblaje
-        uint256 actualPrintingTime;    // Tiempo real de impresión
-        uint256 actualQualityScore;    // Score real de calidad
-        uint256 actualPickupTime;      // Tiempo real de recolección
-        uint256 actualAssemblyTime;    // Tiempo real de ensamblaje
-        bool completed;                // Si el proceso está completo
-        uint256 performanceScore;      // Score general de rendimiento
+        uint256 targetPrintingTime;    // Target time for printing
+        uint256 targetQualityScore;    // Target quality score
+        uint256 targetPickupTime;      // Target time for pickup
+        uint256 targetAssemblyTime;    // Target time for assembly
+        uint256 actualPrintingTime;    // Actual printing time
+        uint256 actualQualityScore;    // Actual quality score
+        uint256 actualPickupTime;      // Actual pickup time
+        uint256 actualAssemblyTime;    // Actual assembly time
+        bool completed;                // Whether the process is complete
+        uint256 performanceScore;      // Overall performance score
     }
 
     struct AdjustmentFactors {
-        uint256 printingWeight;       // Peso para ajustes de tiempo de impresión
-        uint256 qualityWeight;        // Peso para ajustes de calidad
-        uint256 pickupWeight;         // Peso para ajustes de tiempo de recolección
-        uint256 assemblyWeight;       // Peso para ajustes de tiempo de ensamblaje
-        uint256 adjustmentThreshold;  // Umbral para realizar ajustes
+        uint256 printingWeight;       // Weight for printing time adjustments
+        uint256 qualityWeight;        // Weight for quality adjustments
+        uint256 pickupWeight;         // Weight for pickup time adjustments
+        uint256 assemblyWeight;       // Weight for assembly time adjustments
+        uint256 adjustmentThreshold;  // Threshold for making adjustments
     }
 
     // Constants
@@ -53,8 +53,8 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
         uint256 newQualityScore,
         uint256 newPickupTime,
         uint256 newAssemblyTime,
-        uint256 avgPerformance,     // Añadir performance promedio
-        uint256 adjustmentFactor    // Añadir factor de ajuste usado
+        uint256 avgPerformance,
+        uint256 adjustmentFactor
     );
     event PerformanceRegistered(uint256 indexed manufacturingId, uint256 performanceScore);
     event HistoryLimitUpdated(uint256 newLimit);
@@ -153,14 +153,14 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
         if (slaMetrics[0].targetPrintingTime == 0) revert MetricsNotInitialized();
         if (actualQualityScore > 100) revert InvalidParameters();
 
-        // Validar que los tiempos no sean 0
+        // Validate that the times are not 0
         if (actualPrintingTime == 0 || actualPickupTime == 0 || actualAssemblyTime == 0)
             revert InvalidParameters();
 
         SLAMetrics storage metrics = slaMetrics[manufacturingId];
         SLAMetrics storage baseMetrics = slaMetrics[0];
 
-        // Copiar métricas base si no existen
+        // Copy base metrics if they do not exist
         if (metrics.targetPrintingTime == 0) {
             metrics.targetPrintingTime = baseMetrics.targetPrintingTime;
             metrics.targetQualityScore = baseMetrics.targetQualityScore;
@@ -189,7 +189,7 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
     nonReentrant
     returns (uint256)
     {
-        // Obtener los scores individuales
+        // Get the individual scores
         SLAMetrics storage metrics = slaMetrics[manufacturingId];
         AdjustmentFactors memory factors = adjustmentFactors["standard_manufacturing"];
 
@@ -217,7 +217,7 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
             metrics.targetAssemblyTime
         );
 
-        // Emitir los scores individuales
+        // Emit the individual scores
         emit ComponentScores(
             manufacturingId,
             printingScore,
@@ -226,7 +226,7 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
             assemblyScore
         );
 
-        // Calcular score final
+        // Calculate final score
         uint256 performanceScore = _calculateFinalScore(
             printingScore,
             qualityScore,
@@ -318,7 +318,7 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
             factors.assemblyWeight = 1;
         }
 
-        // Calcular score final ponderado con alta precisión
+        // Calculate weighted final score with high precision
         uint256 weightedScore = (
             (printingScore * factors.printingWeight * 10000) +
             (qualityScore * factors.qualityWeight * 10000) +
@@ -334,24 +334,24 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
     pure
     returns (uint256)
     {
-        // Si no hay target, retornar 0
+        // If there's no target, return 0
         if (target == 0) return 0;
 
-        // Si actual es 0, retornar puntaje mínimo
+        // If actual is 0, return minimum score
         if (actual == 0) return 1;
 
-        // Para métricas de tiempo (donde menor es mejor)
+        // For time metrics (where lower is better)
         if (actual <= target) {
-            // Calculamos un score entre BASE_SCORE y 100 basado en qué tan cerca está del target
+            // Calculate a score between BASE_SCORE and 100 based on how close it is to target
             uint256 improvement = ((target - actual) * MAX_BONUS*1e4) / target;
             return BASE_SCORE + (improvement/1e4);
         }
 
-        // Si excede el target, calcular penalización
+        // If exceeds target, calculate penalty
         uint256 excess = ((actual - target) * BASE_SCORE*1e4) / target;
-        if (excess >= BASE_SCORE*1e4) return MIN_PERFORMANCE_THRESHOLD; // Si excede en 100% o más, score mínimo
+        if (excess >= BASE_SCORE*1e4) return MIN_PERFORMANCE_THRESHOLD; // If exceeds by 100% or more, minimum score
 
-        return BASE_SCORE - (excess/1e4); // Penalización lineal basada en el exceso
+        return BASE_SCORE - (excess/1e4); // Linear penalty based on excess
     }
 
     function _calculateQualityScore(uint256 actual, uint256 target)
@@ -359,21 +359,21 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
     pure
     returns (uint256)
     {
-        // Si no hay target, retornar 0
+        // If there's no target, return 0
         if (target == 0) return 0;
         if (actual == 0) return MIN_PERFORMANCE_THRESHOLD;
 
 
-        // Para calidad (donde mayor es mejor)
+        // For quality metrics (where higher is better)
         if (actual >= target) {
-            // Score base más hasta MAX_BONUS puntos adicionales por superar el target
+            // Base score plus up to MAX_BONUS additional points for exceeding target
             uint256 improvement = ((actual - target) * MAX_BONUS) / target;
             if (improvement > MAX_BONUS) improvement = MAX_BONUS;
             return BASE_SCORE + improvement;
         }
 
-        // Si no alcanza el target
-        return (actual * BASE_SCORE) / target; // Score proporcional hasta BASE_SCORE
+        // If target is not reached
+        return (actual * BASE_SCORE) / target; // Proportional score up to BASE_SCORE
     }
 
     function isEligibleForBonification(uint256 manufacturingId) public view returns (bool) {
@@ -391,14 +391,14 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
         uint256[] memory pendingIds = new uint256[](historyLimit);
         uint256 count = 0;
 
-        // Recolectar IDs con scores > BONIFICATION_THRESHOLD
+        // Collect IDs with scores > BONIFICATION_THRESHOLD
         for (uint256 i = 1; i <= currentId; i++) {
             if (isEligibleForBonification(i)) {
                 pendingIds[count++] = i;
             }
         }
 
-        // Ordenar por score descendente
+        // Sort by descending score
         _sortByScore(pendingIds, count);
         return pendingIds;
     }
@@ -425,7 +425,7 @@ contract DynamicSLAManager is Ownable, Pausable, ReentrancyGuard {
         uint256[] storage history = manufacturingTypeHistory[manufacturingType];
 
         if (history.length >= historyLimit) {
-            // Desplazar elementos y eliminar el más antiguo
+            // Move elements and delete the oldest element
             for (uint i = 0; i < history.length - 1; i++) {
                 history[i] = history[i + 1];
             }

@@ -7,13 +7,13 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
 contract IPFSRegistry is Ownable, ReentrancyGuard, Pausable {
-    // Token para pagos y bonificaciones
+    // Token for payments and bonuses
     IERC20 public paymentToken;
 
-    // Porcentaje que va al pool de bonificaciones (10%)
+    // Percentage going to bonus pool (10%)
     uint256 public constant BONIFICATION_POOL_PERCENTAGE = 10;
 
-    // Estructuras
+    // Structures
     struct Design {
         bool isRegistered;
         address owner;
@@ -23,11 +23,10 @@ contract IPFSRegistry is Ownable, ReentrancyGuard, Pausable {
         bool active;
     }
 
-    // Mappings principales
+    // Mappings
     mapping(string => Design) public designs;
     mapping(string => mapping(address => bool)) public designLicenses;
-
-    // Mapping para el control de acceso a bonificaciones
+    // Mapping for bonus access control
     mapping(address => bool) public bonificationManagers;
 
     // Events
@@ -72,7 +71,7 @@ contract IPFSRegistry is Ownable, ReentrancyGuard, Pausable {
         if(price == 0) revert InvalidAmount();
         if(designs[designHash].isRegistered) revert AlreadyLicensed();
 
-        // Transferir tokens para el pool inicial de bonificaciones
+        // Transfer tokens for the initial bonus pool
         if(initialBonificationPool > 0) {
             require(
                 paymentToken.transferFrom(msg.sender, address(this), initialBonificationPool),
@@ -89,7 +88,7 @@ contract IPFSRegistry is Ownable, ReentrancyGuard, Pausable {
             active: true
         });
 
-        // El dueño obtiene automáticamente una licencia
+        // The owner automatically obtains a license
         designLicenses[designHash][msg.sender] = true;
 
         emit DesignRegistered(designHash, msg.sender, price, initialBonificationPool);
@@ -105,19 +104,19 @@ contract IPFSRegistry is Ownable, ReentrancyGuard, Pausable {
         uint256 bonificationAmount = (price * BONIFICATION_POOL_PERCENTAGE) / 100;
         uint256 ownerAmount = price - bonificationAmount;
 
-        // Transferir el pago al dueño
+        // Transfer payment to the owner
         require(
             paymentToken.transferFrom(msg.sender, design.owner, ownerAmount),
             "Failed to transfer payment to owner"
         );
 
-        // Transferir al pool de bonificaciones
+        // Transfer to bonus pool
         require(
             paymentToken.transferFrom(msg.sender, address(this), bonificationAmount),
             "Failed to transfer to bonification pool"
         );
 
-        // Actualizar estado
+        // Update status
         design.bonificationPool += bonificationAmount;
         design.totalLicenses++;
         designLicenses[designHash][msg.sender] = true;

@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract ManufacturingNFT is ERC721URIStorage, Ownable {
-    // Reemplazamos el Counter por un uint256
     uint256 private _currentTokenId;
 
     struct Certificate {
@@ -75,7 +74,7 @@ contract ManufacturingNFT is ERC721URIStorage, Ownable {
         require(completionTime > 0, "Invalid completion time");
         require(qualityScore > 0 && qualityScore <= 100, "Invalid quality score");
 
-        // Incrementamos el contador de manera segura
+        // increase token counter.
         unchecked {
             _currentTokenId++;
         }

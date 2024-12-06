@@ -18,34 +18,34 @@ interface IBiometricRegistry {
 
 /**
  * @title ManufacturingProcess
- * @dev Gestiona el proceso completo de manufactura
+ * @dev Manages the entire manufacturing process
  */
 contract ManufacturingProcess is Ownable, Pausable {
     // Estructura principal del proceso de manufactura
     struct ManufacturingRecord {
-        string designHash;            // Hash IPFS del diseño
-        address operator;             // Operador asignado
-        string printerId;             // ID de la impresora
-        uint256 requiredTemp;         // Temperatura requerida
-        bool printerVerified;         // Verificación de impresora
-        bool visionVerified;          // Verificación de visión
-        bool robotPickupComplete;     // Recolección por robot
-        bool assemblyComplete;        // Ensamblaje completado
-        uint256 startTime;           // Tiempo de inicio
-        uint256 completionTime;      // Tiempo de finalización
-        string status;               // Estado actual
+        string designHash;            // IPFS hash of the design
+        address operator;             // Assigned operator
+        string printerId;             // Printer ID
+        uint256 requiredTemp;         // Required temperature
+        bool printerVerified;         // Printer verification
+        bool visionVerified;          // Vision verification
+        bool robotPickupComplete;     // Robot pickup completion
+        bool assemblyComplete;        // Assembly completion
+        uint256 startTime;            // Start time
+        uint256 completionTime;       // Completion time
+        string status;                // Current status
     }
 
-    // Mappings y variables de estado
+    // Mappings and state variables
     mapping(uint256 => ManufacturingRecord) public records;
     uint256 public currentRecordId;
 
-    // Interfaces de contratos externos
+    // External contract interfaces
     IIPFSRegistry public ipfsRegistry;
     IPrinterRegistry public printerRegistry;
     IBiometricRegistry public biometricRegistry;
 
-    // Eventos
+    // Events
     event ManufacturingStarted(uint256 indexed recordId, string designHash, address operator);
     event PrinterVerified(uint256 indexed recordId, string printerId);
     event VisionCheckComplete(uint256 indexed recordId, bool passed);
@@ -55,7 +55,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     event StatusUpdated(uint256 indexed recordId, string newStatus);
 
     /**
-     * @dev Constructor del contrato
+     * @dev Constructor
      */
     constructor(
         address initialOwner,
@@ -68,7 +68,7 @@ contract ManufacturingProcess is Ownable, Pausable {
         biometricRegistry = IBiometricRegistry(_biometricRegistry);
     }
 
-    // Modificadores
+    // Modifiers
     modifier recordExists(uint256 recordId) {
         require(records[recordId].startTime != 0, "Record does not exist");
         _;
@@ -80,7 +80,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Inicia un nuevo proceso de manufactura
+     * @dev Start a new manufacturing process
      */
     function startManufacturing(
         string memory designHash,
@@ -121,7 +121,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Verifica la impresora asignada
+     * @dev Verify the assigned printer
      */
     function verifyPrinter(uint256 recordId)
     external
@@ -144,7 +144,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra la verificación de visión
+     * @dev Record vision verification
      */
     function setVisionVerification(uint256 recordId, bool passed)
     external
@@ -164,7 +164,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra la recolección por robot
+     * @dev Records collection by robot
      */
     function setRobotPickup(uint256 recordId)
     external
@@ -184,7 +184,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra el ensamblaje completado
+     * @dev Records the completed assembly
      */
     function setAssemblyComplete(uint256 recordId)
     external
@@ -206,7 +206,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Obtiene el registro completo de manufactura
+     * @dev Obtains the complete manufacturing record
      */
     function getManufacturingRecord(uint256 recordId)
     external
@@ -218,7 +218,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Obtiene el tiempo total de manufactura
+     * @dev Obtains the total manufacturing time
      */
     function getManufacturingTime(uint256 recordId)
     external
@@ -234,7 +234,7 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Verifica si el proceso está completo
+     * @dev Verify if the process is complete
      */
     function isManufacturingComplete(uint256 recordId)
     external
@@ -246,14 +246,14 @@ contract ManufacturingProcess is Ownable, Pausable {
     }
 
     /**
-     * @dev Pausa el contrato
+     * @dev Contract Pause
      */
     function pause() external onlyOwner {
         _pause();
     }
 
     /**
-     * @dev Despausa el contrato
+     * @dev Unpause contract
      */
     function unpause() external onlyOwner {
         _unpause();

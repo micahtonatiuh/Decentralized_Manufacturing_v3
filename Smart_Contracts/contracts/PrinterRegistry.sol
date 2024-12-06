@@ -6,21 +6,21 @@ import "@openzeppelin/contracts/utils/Pausable.sol";
 
 /**
  * @title PrinterRegistry
- * @dev Gestiona el registro y estado de las impresoras 3D en el sistema de manufactura
+ * @dev Manages the registration and status of 3D printers in the manufacturing system
  */
 contract PrinterRegistry is Ownable, Pausable {
-    // Estructura para almacenar la información de cada impresora
+    // Structure to store information for each printer
     struct Printer {
-        string printerType;           // "fast" o "slow"
-        bool isActive;                // Estado actual de la impresora
-        uint256 maxTemperature;       // Temperatura máxima soportada
-        uint256 minTemperature;       // Temperatura mínima soportada
-        string[] supportedMaterials;  // Lista de materiales soportados
-        uint256 registrationDate;     // Fecha de registro
-        uint256 lastMaintenanceDate;  // Última fecha de mantenimiento
+        string printerType;           // "fast" or "slow"
+        bool isActive;                // Current printer status
+        uint256 maxTemperature;       // Maximum supported temperature
+        uint256 minTemperature;       // Minimum supported temperature
+        string[] supportedMaterials;  // List of supported materials
+        uint256 registrationDate;     // Registration date
+        uint256 lastMaintenanceDate;  // Last maintenance date
     }
 
-    // Mappings principales
+    // Main mappings
     mapping(string => Printer) public printers;
     mapping(string => mapping(string => bool)) public printerCapabilities;
 
@@ -32,13 +32,13 @@ contract PrinterRegistry is Ownable, Pausable {
     event MaintenancePerformed(string indexed printerId, uint256 timestamp);
 
     /**
-     * @dev Constructor que inicializa el contrato
-     * @param initialOwner La dirección del propietario inicial del contrato
+     * @dev Constructor that initializes the contract
+     * @param initialOwner The address of the initial contract owner
      */
     constructor(address initialOwner) Ownable(initialOwner) Pausable() {
     }
 
-    // Modificadores
+    // Modifiers
     modifier printerExists(string memory printerId) {
         require(printers[printerId].registrationDate != 0, "Printer does not exist");
         _;
@@ -54,7 +54,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra una nueva impresora en el sistema
+     * @dev Register a new printer in the system
      */
     function registerPrinter(
         string memory printerId,
@@ -91,7 +91,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Actualiza el estado de actividad de una impresora
+     * @dev Updates the activity status of a printer
      */
     function updatePrinterStatus(string memory printerId, bool isActive)
     external
@@ -104,7 +104,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Elimina una impresora del registro
+     * @dev Removes a printer from the registry
      */
     function removePrinter(string memory printerId)
     external
@@ -117,7 +117,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Actualiza las especificaciones técnicas de una impresora
+     * @dev Update the technical specifications of a printer
      */
     function updatePrinterSpecs(
         string memory printerId,
@@ -137,12 +137,12 @@ contract PrinterRegistry is Ownable, Pausable {
         printer.maxTemperature = newMaxTemp;
         printer.minTemperature = newMinTemp;
 
-        // Limpiar capacidades anteriores
+        // Clear past capacities
         for (uint i = 0; i < printer.supportedMaterials.length; i++) {
             printerCapabilities[printerId][printer.supportedMaterials[i]] = false;
         }
 
-        // Actualizar nuevos materiales y capacidades
+        // Maintain new materials and capabilities
         printer.supportedMaterials = newMaterials;
         for (uint i = 0; i < newMaterials.length; i++) {
             printerCapabilities[printerId][newMaterials[i]] = true;
@@ -152,7 +152,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Registra mantenimiento realizado a una impresora
+     * @dev Records maintenance performed on a printer
      */
     function registerMaintenance(string memory printerId)
     external
@@ -165,7 +165,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Verifica si una impresora soporta un material específico
+     * @dev Verify if a printer supports a specific media
      */
     function supportsMaterial(string memory printerId, string memory material)
     external
@@ -176,7 +176,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Obtiene los materiales soportados por una impresora
+     * @dev Obtains the materials supported by a printer
      */
     function getPrinterMaterials(string memory printerId)
     external
@@ -188,7 +188,7 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Verifica si una impresora está activa y dentro del rango de temperatura
+     * @dev Checks if a printer is active and within temperature range
      */
     function isPrinterOperational(
         string memory printerId,
@@ -207,14 +207,14 @@ contract PrinterRegistry is Ownable, Pausable {
     }
 
     /**
-     * @dev Pausa el contrato
+     * @dev Pause Contract
      */
     function pause() external onlyOwner {
         _pause();
     }
 
     /**
-     * @dev Despausa el contrato
+     * @dev Unpause Contract
      */
     function unpause() external onlyOwner {
         _unpause();

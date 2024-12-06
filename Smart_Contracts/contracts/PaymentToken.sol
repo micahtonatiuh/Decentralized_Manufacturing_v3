@@ -8,13 +8,13 @@ import "@openzeppelin/contracts/access/AccessControl.sol";
 
 /**
 * @title PaymentToken
-* @dev Token ERC20 para pagos y bonificaciones en el sistema de manufactura
+* @dev ERC20 token for payments and bonuses in manufacturing system
 */
 contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
 
-    // Eventos específicos
+    // Events
     event MinterAdded(address indexed account);
     event MinterRemoved(address indexed account);
     event EmergencyTransfer(address indexed from, address indexed to, uint256 amount);
@@ -25,7 +25,7 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     error NotAuthorized();
 
     /**
-     * @dev Constructor que configura el nombre, símbolo y roles iniciales
+     * @dev Constructor configuring the name andsymbol
    */
     constructor() ERC20("Manufacturing Payment Token", "MPT") {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -34,25 +34,25 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Pausa todas las transferencias de tokens
-   * Solo puede ser llamado por una cuenta con rol PAUSER_ROLE
+     * @dev Pauses all token transfers
+   * Can only be called by an account with the PAUSER_ROLE role.
    */
     function pause() public onlyRole(PAUSER_ROLE) {
         _pause();
     }
 
     /**
-     * @dev Despausa todas las transferencias de tokens
-   * Solo puede ser llamado por una cuenta con rol PAUSER_ROLE
+     * @dev Unpauses all token transfers
+   * Can only be called by an account with the PAUSER_ROLE role.
    */
     function unpause() public onlyRole(PAUSER_ROLE) {
         _unpause();
     }
 
     /**
-     * @dev Crea nuevos tokens
-   * @param to dirección que recibirá los tokens
-   * @param amount cantidad de tokens a crear
+     * @dev Create new tokens
+   * @param to address that will receive the tokens
+   * @param amount amount of tokens to create
    */
     function mint(address to, uint256 amount) public onlyRole(MINTER_ROLE) {
         if(to == address(0) || amount == 0) revert InvalidParameters();
@@ -60,8 +60,8 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Añade una nueva dirección como minter
-   * @param account dirección a añadir como minter
+     * @dev Add a new address as minter
+   * @param account address to be added as minter
    */
     function addMinter(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         if(account == address(0)) revert InvalidParameters();
@@ -70,8 +70,8 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Remueve una dirección como minter
-   * @param account dirección a remover como minter
+     * @dev Remove an address as minter
+   * @param account address to be removed as minter
    */
     function removeMinter(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         if(account == address(0)) revert InvalidParameters();
@@ -80,10 +80,10 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Transfiere tokens en caso de emergencia
-   * @param from dirección desde donde transferir
-   * @param to dirección que recibirá los tokens
-   * @param amount cantidad de tokens a transferir
+     * @dev Transfer tokens in case of emergency
+   * @param from address to transfer from
+   * @param to address to receive tokens from
+   * @param amount amount of tokens to transfer
    */
     function emergencyTransfer(
         address from,
@@ -98,9 +98,9 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Quema tokens de una dirección específica
-   * @param from dirección de la cual quemar tokens
-   * @param amount cantidad de tokens a quemar
+     * @dev Burns tokens from a specific address
+   * @param from address to burn tokens from
+   * @param amount amount of tokens to burn
    */
     function burnFrom(address from, uint256 amount)
     public
@@ -114,7 +114,7 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Hook que se ejecuta antes de cualquier transferencia de tokens
+     * @dev Hook to be executed prior to any token transfer
    */
     function _beforeTokenTransfer(
         address,
@@ -125,7 +125,7 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Soporta interfaces de AccessControl y ERC20
+     * @dev Supports AccessControl and ERC20 interfaces
    */
     function supportsInterface(bytes4 interfaceId)
     public
@@ -137,7 +137,7 @@ contract PaymentToken is ERC20, ERC20Burnable, Pausable, AccessControl {
     }
 
     /**
-     * @dev Función para recibir ETH (necesaria para recibir ETH)
+     * @dev Function to receive ETH (required to receive ETH)
    */
     receive() external payable {
         revert("Direct ETH payments not accepted");
